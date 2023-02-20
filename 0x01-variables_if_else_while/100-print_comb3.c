@@ -16,7 +16,7 @@ int main(void)
 		for (j = i ; j < 10 ; j++)
 		{
 			if (i < j && i != j)
-			{	
+			{
 				putchar(i + '0');
 				putchar(j + '0');
 				putchar(',');
@@ -24,6 +24,6 @@ int main(void)
 			}
 		}
 	}
-	putchar(i'\n')
+	putchar('\n');
 	return (0);
 }
