@@ -1,7 +1,3 @@
-
-100 - IS_PALINDROME.C CODE
-
-
 #include "main.h"
 
 int check_pal(char *s, int i, int len);
