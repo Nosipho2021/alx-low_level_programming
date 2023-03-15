@@ -8,60 +8,58 @@
  * Return: concat of s1 and s2
  */
 
+int get_string_length(const char *str)
+{
+	int length = 0;
+    
+	while (str[length] != '\0')
+	{
+	length++;
+	}    
+    
+	return length;
+}
+
 char *str_concat(char *s1, char *s2)
 {
-
 	char *conct;
-
-	int i, ci;
-
-	if (s1 == NULL)
-
-		s1 = "";
-
+    
+	if (s1 == NULL)	
+	{
+	s1 = "";
+	}
+    
 	if (s2 == NULL)
-
-		s2 = "";
-
-		i = ci = 0;
-
-	while (s1[i] != '\0')
-
-		i++;
-
-	while (s2[ci] != '\0')
-
-		ci++;
-
-	conct = malloc(sizeof(char) * (i + ci + 1));
-
+	{
+	s2 = "";
+	}
+    
+	int s1_length = get_string_length(s1);
+	int s2_length = get_string_length(s2);
+    
+	conct = malloc(sizeof(char) * (s1_length + s2_length + 1));
+    
 	if (conct == NULL)
-
-		return (NULL);
-
-	i = ci = 0;
-
+	{
+	return NULL;
+	}
+    
+	int i = 0, ci = 0;
+    
 	while (s1[i] != '\0')
-
 	{
-
-		conct[i] = s1[i];
-
-		i++;
-
+	conct[i] = s1[i];
+	i++;
 	}
-
+    
 	while (s2[ci] != '\0')
-
 	{
-
-		conct[i] = s2[ci];
-
-		i++, ci++;
-
+	conct[i] = s2[ci];
+	i++;
+	ci++;
 	}
-
+    
 	conct[i] = '\0';
-
-	return (conct);
+    
+	return conct;
 }
