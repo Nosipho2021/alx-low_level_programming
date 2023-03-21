@@ -8,10 +8,7 @@
 	 * @age: Second member
 	 * @owner: Third member
 	 *
-	 * Description: This structure represents a dog and contains basic information
- * such as its name, age, and owner. This structure is used throughout the
- * program to store information about individual dogs and pass that information
- * between functions.
+	 * Description: This structure represents a dog and contains basic information like name, age.
 	 */
 	struct dog
 	{
