@@ -8,7 +8,7 @@
 	 * @age: Second member
 	 * @owner: Third member
 	 *
-	 * Description: This structure represents a dog and contains basic information like name, age.
+	 * Description: This structure represents a dog and contains basic information
 	 */
 	struct dog
 	{
