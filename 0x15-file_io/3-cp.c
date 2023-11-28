@@ -1,78 +1,103 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <elf.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include "main.h"
+
+char *create_buffer(char *file);
+void close_file(int fd);
 
 /**
- * print_error_exit - Print an error message to stderr and exit with code 98
- * @msg: The error message to print
+ * create_buffer - Allocates 1024 bytes for a buffer.
+ * @file: The name of the file buffer is storing chars for.
+ *
+ * Return: A pointer to the newly-allocated buffer.
  */
-void print_error_exit(const char *msg)
+char *create_buffer(char *file)
 {
-	fprintf(stderr, "%s\n", msg);
-	exit(98);
-}
-/**
- * print_elf_header - Print information from the ELF header
- * @header: Pointer to the ELF header structure
- */
+	char *buffer;
 
+	buffer = malloc(sizeof(char) * 1024);
 
-void print_elf_header(const Elf64_Ehdr *header)
-{
-	printf("  Magic:   ");
-	for (int i = 0; i < EI_NIDENT; i++)
+	if (buffer == NULL)
 	{
-	printf("%02x ", header->e_ident[i]);
+		dprintf(STDERR_FILENO,
+			"Error: Can't write to %s\n", file);
+		exit(99);
 	}
-	printf("\n");
 
-	printf("  Class:                             %s\n", header->e_ident[EI_CLASS] == ELFCLASS32 ? "ELF32" : "ELF64");
-	printf("  Data:                              %s\n", header->e_ident[EI_DATA] == ELFDATA2LSB ? "2's complement, little endian" : "2's complement, big endian");
-	printf("  Version:                           %d (current)\n", header->e_ident[EI_VERSION]);
-	printf("  OS/ABI:                            %s\n", header->e_ident[EI_OSABI] == ELFOSABI_SYSV ? "UNIX - System V" : "Other");
-	printf("  ABI Version:                       %d\n", header->e_ident[EI_ABIVERSION]);
-	printf("  Type:                              %s\n", header->e_type == ET_EXEC ? "EXEC (Executable file)" : "Other");
-	printf("  Entry point address:               %#lx\n", (unsigned long)header->e_entry);
+	return (buffer);
 }
+
 /**
- * main - Entry point of the program
- * @argc: The number of command-line arguments
- * @argv: An array of strings representing the command-line arguments
- * Return: 0 on success, 98 on error
+ * close_file - Closes file descriptors.
+ * @fd: The file descriptor to be closed.
+ */
+void close_file(int fd)
+{
+	int c;
+
+	c = close(fd);
+
+	if (c == -1)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd);
+		exit(100);
+	}
+}
+
+/**
+ * main - Copies the contents of a file to another file.
+ * @argc: The number of arguments supplied to the program.
+ * @argv: An array of pointers to the arguments.
+ *
+ * Return: 0 on success.
+ *
+ * Description: If the argument count is incorrect - exit code 97.
+ * If file_from does not exist or cannot be read - exit code 98.
+ * If file_to cannot be created or written to - exit code 99.
+ * If file_to or file_from cannot be closed - exit code 100.
  */
 int main(int argc, char *argv[])
 {
-	if (argc != 2)
+	int from, to, r, w;
+	char *buffer;
+
+	if (argc != 3)
 	{
-	print_error_exit("Usage: elf_header elf_filename");
+		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n");
+		exit(97);
 	}
 
-	int fd = open(argv[1], O_RDONLY);
+	buffer = create_buffer(argv[2]);
+	from = open(argv[1], O_RDONLY);
+	r = read(from, buffer, 1024);
+	to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
 
-	if (fd ==  -1)
-	{
-	print_error_exit("Error opening file");
-	}
+	do {
+		if (from == -1 || r == -1)
+		{
+			dprintf(STDERR_FILENO,
+				"Error: Can't read from file %s\n", argv[1]);
+			free(buffer);
+			exit(98);
+		}
 
-	Elf64_Ehdr elf_header;
-	ssize_t read_size = read(fd, &elf_header, sizeof(elf_header));
+		w = write(to, buffer, r);
+		if (to == -1 || w == -1)
+		{
+			dprintf(STDERR_FILENO,
+				"Error: Can't write to %s\n", argv[2]);
+			free(buffer);
+			exit(99);
+		}
 
-	if (read_size == -1)
-	{
-	print_error_exit("Error reading file");
-	}
+		r = read(from, buffer, 1024);
+		to = open(argv[2], O_WRONLY | O_APPEND);
 
-	if (read_size != sizeof(elf_header) || elf_header.e_ident[EI_MAG0] != ELFMAG0 ||
-	elf_header.e_ident[EI_MAG1] != ELFMAG1 || elf_header.e_ident[EI_MAG2] != ELFMAG2 ||
-	elf_header.e_ident[EI_MAG3] != ELFMAG3)
-	{
-	print_error_exit("Not an ELF file");
-	}
+	} while (r > 0);
 
-	print_elf_header(&elf_header);
-	close(fd);
+	free(buffer);
+	close_file(from);
+	close_file(to);
 
 	return (0);
 }
