@@ -38,13 +38,15 @@ void print_elf_header(const Elf64_Ehdr *header)
 
 int main(int argc, char *argv[])
 {
+	int fd;
+	Elf64_Ehdr elf_header;
+	ssize_t read_size;
+
+
 	if (argc != 2)
 {
 	print_error_exit("Usage: elf_header elf_filename");
 }
-
-	int fd;
-	Elf64_Ehdr elf_header;
 
 	fd = open(argv[1], O_RDONLY);
 	if (fd == -1)
@@ -52,11 +54,11 @@ int main(int argc, char *argv[])
 	print_error_exit("Error opening file");
 }
 
-	ssize_t read_size = read(fd, &elf_header, sizeof(elf_header));
-
+	read_size = read(fd, &elf_header, sizeof(elf_header));
 	if (read_size == -1)
 {
 	print_error_exit("Error reading file");
+
 }
 
 	if (read_size != sizeof(elf_header) ||
